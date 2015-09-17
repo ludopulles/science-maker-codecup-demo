@@ -6,7 +6,23 @@
 //
 #include <iostream>
 #include <string>
+
+#define COLOURS //#undef to disable colours
+
+#ifdef _WIN32
+#include <windows.h>
+void sleep(int msec){
+    Sleep(msec);
+}
+#else
+#include <unistd.h>
+void sleep(int msec){
+    usleep(msec*1000);
+}
+#endif
+
 using namespace std;
+
 int antwoord, tot1, tot2, tot3, tot4, tot5, tot6, tot7, field[7][6];
 //
 // Mijn programma gebruikt een 2-dimensionale array (field[][]) om op te slaan waar de stenen staan
@@ -191,20 +207,33 @@ void removestone(int row)
     }
 }
 string display(int j){
-	if(j==0)return "-";
+#ifdef COLOURS
+	if(j==0)return "\x1B[35m.\x1B[0m";
+#else
+    if(j==0)return ".";
+#endif
 	if(j==1)return "O";
 	if(j==2)return "X";
 	return "display error";
 }
 void printline(int i){
-	cout<<"	|"<<display(field[0][i])<<"|"<<display(field[1][i])<<"|"<<display(field[2][i])<<"|"<<display(field[3][i])<<"|"<<display(field[4][i])<<"|"<<display(field[5][i])<<"|"<<display(field[6][i])<<"|"<<endl;
-	cout<<"	---------------"<<endl;
+#ifdef COLOURS
+    string border="\x1B[33m|\x1B[0m";
+#else
+    string border="|";
+#endif
+	cout<<'\t'<<border<<display(field[0][i])<<border<<display(field[1][i])<<border<<display(field[2][i])<<border<<display(field[3][i])<<border<<display(field[4][i])<<border<<display(field[5][i])<<border<<display(field[6][i])<<border<<endl;
+    //cout<<"   +-+-+-+-+-+-+-+"<<endl;
 }
 void printboard(){
-	cout<<"\n	-1-2-3-4-5-6-7-"<<endl;
-	for(int i=0; i<6; i+=1){
-		printline(i);
-	}
+#ifdef COLOURS
+    cout<<"\t \x1B[33m1 2 3 4 5 6 7\x1B[0m "<<endl;
+#else
+    cout<<"\t 1 2 3 4 5 6 7 "<<endl;
+#endif
+    for(int i=0; i<6; i+=1){
+        printline(i);
+    }
 }
 void cleanboard(){
 	for(int i=0; i<6; i+=1){
@@ -224,7 +253,7 @@ void cleanboard(){
 int i=0, j=0, stop=false, order=0, wins1=0, wins2=0, wins3=0, wins4=0, wins5=0, wins6=0, wins7=0, loss1=0, loss2=0, loss3=0, loss4=0, loss5=0, loss6=0, loss7=0;
 bool exclude1=0, exclude2=0, exclude3=0, exclude4=0, exclude5=0, exclude6=0, exclude7=0, dontdo1=0, dontdo2=0, dontdo3=0, dontdo4=0, dontdo5=0, dontdo6=0, dontdo7=0, good1=0, good2=0, good3=0, good4=0, good5=0, good6=0, good7=0;
 
-int moveAI(string);
+int moveAI(string,bool);
 
 int main(void)
 {
@@ -242,7 +271,8 @@ int main(void)
 	while(1){
 		cin>>leesgetal;
 		if (leesgetal=="Quit")break;
-		moveAI(leesgetal);
+		if(moveAI(leesgetal,true)==-42)break; //quit in repeated question
+        cout<<endl<<"My move:"<<endl;
 		printboard();
 		if(checkwin(1)){
 			cout<<"You lost!\nA new game is started automatically, or type 'Start' to give the computer the first turn"<<endl;
@@ -256,16 +286,30 @@ int main(void)
     return 0;
 }
 
-    int moveAI(string leesgetal){
+    int moveAI(string leesgetal,bool interactive=false){
         //stop als Quit werd ingevoerd
         //zet een steen neer op de juiste plek
-        if (leesgetal=="1") {dropstone(1,2); order=1;}
-        if (leesgetal=="2") {dropstone(2,2); order=5;}
-        if (leesgetal=="3") {dropstone(3,2); order=6;}
-        if (leesgetal=="4") {dropstone(4,2); order=3;}
-        if (leesgetal=="5") {dropstone(5,2); order=4;}
-        if (leesgetal=="6") {dropstone(6,2); order=0;}
-        if (leesgetal=="7") {dropstone(7,2); order=2;}
+        do {
+            if (leesgetal=="1"&&tot1!=6) {dropstone(1,2); order=1;}
+            else if (leesgetal=="2"&&tot2!=6) {dropstone(2,2); order=5;}
+            else if (leesgetal=="3"&&tot3!=6) {dropstone(3,2); order=6;}
+            else if (leesgetal=="4"&&tot4!=6) {dropstone(4,2); order=3;}
+            else if (leesgetal=="5"&&tot5!=6) {dropstone(5,2); order=4;}
+            else if (leesgetal=="6"&&tot6!=6) {dropstone(6,2); order=0;}
+            else if (leesgetal=="7"&&tot7!=6) {dropstone(7,2); order=2;}
+            else {
+                cout<<"Invalid column! Enter the number of a column that is not full."<<endl;
+                cin>>leesgetal;
+                if (leesgetal=="Quit")return -42;
+                continue;
+            }
+            break;
+        } while (true);
+        if (interactive) {
+            cout<<endl;
+            printboard();
+            sleep(500);
+        }
 		if(checkwin(2))return 8;
         exclude1=0; exclude2=0; exclude3=0; exclude4=0; exclude5=0; exclude6=0; exclude7=0;
         dontdo1=0; dontdo2=0; dontdo3=0; dontdo4=0; dontdo5=0; dontdo6=0; dontdo7=0;
