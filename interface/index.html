@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>4 op een rij</title>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var WID=7,HEI=6;
+var aicmds=["./player1","./player2","./player3","./TNTiv3a -d 8","./TNTiv3a -d 10","./TNTiv3a -d 11","./TNTiv3a -d 12","./TNTiv3a2 -d 8","./TNTiv3a2 -d 10","./TNTiv3a2 -d 11","./TNTiv3a2 -d 12"];
+var colheight,BD;
+
+var aigoesfirst;
+
+var socket=io();
+socket.on("alert",function(msg){alert(msg);});
+socket.on("jseval",function(msg){eval(msg);});
+socket.on("ailine",function(line){
+	aigetmove_cbs.shift()(line);
+});
+
+function init(){
+	var table=document.getElementById("boardtable");
+	var x,y;
+	var tbody,tr,td;
+	var div;
+
+	for(x=0;x<WID;x++){
+		table.appendChild(document.createElement("colgroup"));
+	}
+	tbody=document.createElement("tbody");
+	for(y=0;y<HEI;y++){
+		tr=document.createElement("tr");
+		for(x=0;x<WID;x++){
+			td=document.createElement("td");
+			td.classList.add("cell");
+			tr.appendChild(td);
+			(function(x,y){
+				td.addEventListener("mouseover",function(ev){
+					if(colheight[x]<HEI){
+						table.children[x].classList.add("colhover");
+					}
+				});
+				td.addEventListener("mouseout",function(ev){
+					table.children[x].classList.remove("colhover");
+				});
+				td.addEventListener("click",function(ev){
+					if(usergetmove_cb==null){
+						alert("usergetmove_cb = null...?");
+						throw new Error("usergetmove_cb = null in td click");
+					}
+					usergetmove_cb(x);
+				});
+			})(x,y);
+		}
+		tbody.appendChild(tr);
+	}
+	table.appendChild(tbody);
+
+
+	colheight=iota(WID,0,0);
+	BD=iota(WID*HEI,0,0);
+
+	var select=document.getElementById("aicmdselect");
+	aicmds.forEach(function(cmd,i){
+		var option=document.createElement("option");
+		option.value=cmd;
+		if(i==7)option.setAttribute("selected","");
+		option.innerHTML=cmd.replace(/^.*\//,"");
+		select.appendChild(option);
+	});
+}
+
+function iota(len,start,incr){ //defaults start=0 incr=1
+	var a=new Array(len);
+	var i;
+	for(i=0;i<len;i++)a[i]=start+i*incr;
+	return a;
+}
+
+function setstone(x,y,p){ //pass p=0 to clear
+	BD[WID*y+x]=p;
+	var e=document.getElementById("boardtable").lastElementChild.children[HEI-1-y].children[x];
+	if(e.firstElementChild)e.removeChild(e.firstElementChild);
+	if(p!=1&&p!=2)return;
+	var span=document.createElement("span");
+	span.setAttribute("style","top:-150px;opacity:0");
+	setTimeout(function(){span.setAttribute("style","");},0);
+	if(p==1)span.classList.add("X");
+	else if(p==2)span.classList.add("O");
+	e.appendChild(span);
+}
+
+function addstone(col,p){
+	if(colheight[col]>=HEI)throw new Error("addstone() on full column");
+	setstone(col,colheight[col],p);
+	colheight[col]++;
+}
+
+function removestone(col){
+	if(colheight[col]<=0)throw new Error("removestone() on empty column");
+	colheight[col]--;
+	setstone(col,colheight[col],0);
+}
+
+function newgamevsai(){
+	var i;
+	for(i=0;i<WID;i++){
+		while(colheight[i])removestone(i);
+	}
+	var cmd=document.getElementById("aicmdselect").value;
+	socket.emit("aistart",cmd);
+	if(document.getElementById("aistarts").checked){
+		aigoesfirst=true;
+		socket.emit("aiwriteln","Start");
+		aigetmove(aigotmove);
+	} else {
+		aigoesfirst=false;
+		usergetmove(usergotmove);
+	}
+}
+
+function aistop(){
+	socket.emit("aistop");
+	var boardscreen=document.getElementById("boardscreen");
+	boardscreen.removeAttribute("style");
+}
+
+function aigotmove(col,reqtime){
+	setTimeout(function(){
+		addstone(col,aigoesfirst?1:2);
+		usergetmove(usergotmove);
+	},500-Math.min(500,new Date().getTime()-reqtime.getTime()));
+}
+
+function usergotmove(col){
+	addstone(col,aigoesfirst?2:1);
+	socket.emit("aiwriteln",(col+1).toString());
+	aigetmove(aigotmove);
+}
+
+var aigetmove_cbs=[];
+function aigetmove(cb){
+	var now=new Date();
+	aigetmove_cbs.push(function(res){cb(res-1,now);});
+	socket.emit("aigetline");
+}
+
+var usergetmove_cb=null;
+function usergetmove(cb){
+	var boardscreen=document.getElementById("boardscreen");
+	boardscreen.style.display="none";
+	usergetmove_cb=function(){
+		boardscreen.removeAttribute("style");
+		cb.apply(null,arguments);
+	};
+}
+</script>
+<style>
+table#boardtable{
+	border-collapse:collapse;
+}
+div#boardscreen{
+	top:0;
+	position:absolute;
+	display:inline-block;
+	width:380px;
+	height:320px;
+	background-color:rgba(128,128,128,0.2);
+}
+td.cell{
+	position:relative;
+	width:50px;
+	height:50px;
+	border:1px #333 solid;
+	border-width:1px 2px 1px 2px;
+	border-top-color:#bbb;
+	border-bottom-color:#bbb;
+}
+tr:last-child td.cell{
+	border-bottom-width:2px;
+	border-bottom-color:#333;
+}
+td.cell span{
+	position:absolute;
+	display:inline-block;
+	width:50px;
+	height:50px;
+	border-radius:25px;
+	transition:top .3s ease-in, opacity .3s ease-in;
+}
+td.cell span.X{
+	background-color:#ccc;
+	top:1px;
+}
+td.cell span.O{
+	background-color:#111;
+	top:1px;
+}
+
+/*#boardtable td{
+	cursor:pointer;
+}*/
+#boardtable colgroup.colhover{
+	background-color:#eef;
+}
+</style>
+</head>
+<body onload="init()">
+<div id="boardcontainer">
+	<br>
+	<div style="position:relative">
+		<table id="boardtable"></table>
+		<div id="boardscreen"></div>
+	</div>
+</div>
+<br>
+<br>
+<div style="border:1px #ddd solid;display:inline-block;padding:5px">
+	AI command: <select id="aicmdselect"></select><br>
+	<label for="aistarts"><input type="checkbox" id="aistarts" name="aistarts">AI starts</label><br>
+	<input type="button" onclick="newgamevsai()" value="Start new game vs AI"><br>
+	<br>
+	<input type="button" onclick="aistop()" value="Stop AI">
+</div>
+</body>
+</html>
