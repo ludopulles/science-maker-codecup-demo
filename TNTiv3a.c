@@ -35,11 +35,11 @@ int minimaxab(int depth,int alpha,int beta,int p);
 inline _Bool isfinalme(void);
 inline _Bool isfinalother(void);
 inline _Bool isfinal(void);
-int evaluate(int d);
-_Bool addStone(int pos,int p);
-_Bool removeStone(int pos,int p);
-int max(int a,int b);
-int min(int a,int b);
+inline int evaluate(int d);
+inline _Bool addStone(int pos,int p);
+inline _Bool removeStone(int pos,int p);
+inline int max(int a,int b);
+inline int min(int a,int b);
 
 int main(int argc,char **argv){
 	char str[20],preload;
@@ -275,7 +275,7 @@ inline _Bool isfinal(void){
 	return isfinalme()||isfinalother();
 }
 
-int evaluate(int d){ //board's heuristic value for "me"
+inline int evaluate(int d){ //board's heuristic value for "me"
 	int i,score;
 	score=0;
 	for(i=0;i<69;i++){
@@ -294,8 +294,8 @@ int hasthreat(int pos){
                    else if(bother&(U64(1)<<(y*7+j))){if(mode==1)break;numstonesother++;mode=-1;} \
                    else break;}
 	numstonesme=numstonesother=0;
-	for(j=x;j>=(x-3<0?0:x-3);j--)innerloopx
-	for(j=x;j<=(x+3>6?6:x+3);j++)innerloopx
+	for(j=x;j>=max(x-3,0);j--)innerloopx
+	for(j=x;j<=min(x+3,6);j++)innerloopx
 	if(numstonesme>=3)return 1;
 	if(numstonesother>=3)return -1;
 
@@ -317,7 +317,7 @@ int hasthreat(int pos){
 	return 0;
 }
 
-_Bool addStone(int pos,int p){
+inline _Bool addStone(int pos,int p){
 	if(height[pos]==6)return 0;
 	if(p==me)bme|=(U64(1)<<(pos+height[pos]*7));
 	else bother|=(U64(1)<<(pos+height[pos]*7));
@@ -325,7 +325,7 @@ _Bool addStone(int pos,int p){
 	return 1;
 }
 
-_Bool removeStone(int pos,int p){
+inline _Bool removeStone(int pos,int p){
 	if(height[pos]==0)return 0;
 	if(p==me)bme&=~(U64(1)<<(pos+7*height[pos]));
 	else bother&=~(U64(1)<<(pos+7*height[pos]));
@@ -333,6 +333,6 @@ _Bool removeStone(int pos,int p){
 	return 1;
 }
 
-int max(int a,int b){return b>a?b:a;}
+inline int max(int a,int b){return b>a?b:a;}
 
-int min(int a,int b){return b<a?b:a;}
+inline int min(int a,int b){return b<a?b:a;}
