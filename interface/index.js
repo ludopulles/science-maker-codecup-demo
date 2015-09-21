@@ -5,7 +5,6 @@ var app=require("express")(),
     child_process=require("child_process"),
     shlex=require("shell-quote").parse;
 
-
 var HTTPPORT=8012;
 
 
@@ -21,6 +20,14 @@ function resetai(){
 	ailines=[];
 	ailineslisteners=[];
 }
+
+app.get('/style.css', function(req, res) {
+	res.sendFile(__dirname + "/style.css");
+});
+app.get('/client.js', function(req, res) {
+	res.sendFile(__dirname + "/client.js");
+});
+
 
 app.get("/",function(req,res){
 	res.sendFile(__dirname+"/index.html");
@@ -52,7 +59,6 @@ io.on("connection",function(_conn){
 				if(conn)conn.emit("alert",err.message);
 				console.log(err);
 				resetai();
-				return;
 			}
 		});
 		proc.stdout.on("data",function(data){
