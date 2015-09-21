@@ -4,7 +4,7 @@
 
 #define U64(x) ((uint64_t)(x))
 
-#define NSIMULATIONS (1000)
+#define NSIMULATIONS (3000)
 
 using namespace std;
 
