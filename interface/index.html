@@ -120,6 +120,7 @@ function removestone(col){
 
 function newgamevsai(){
 	var i;
+	aiVsAi=false;
 	for(i=0;i<WID;i++){
 		while(colheight[i])removestone(i);
 	}
@@ -136,24 +137,50 @@ function newgamevsai(){
 	}
 }
 
+function newaivsai(){
+	aiVsAi=true;
+	var i;
+	for(i=0;i<WID;i++){
+		while(colheight[i])removestone(i);
+	}
+	var cmd=document.getElementById("aicmdselect").value;
+	socket.emit("aistart2",cmd,cmd);
+	socket.emit("aistatus");
+	socket.emit("aiwriteln","Start");
+	aigetmove(aigotmove);
+	document.getElementById("ainextmove").style.display="inline";
+}
+
 function aistop(){
 	socket.emit("aistop");
 	socket.emit("aistatus");
 	var boardscreen=document.getElementById("boardscreen");
 	boardscreen.removeAttribute("style");
 }
-
+var lastMove;
+var turn=0;
+var aiVsAi=false;
 function aigotmove(col,reqtime){
+	lastMove=col;
+	turn=!turn;
 	setTimeout(function(){
-		addstone(col,aigoesfirst?1:2);
+		if(aiVsAi){
+			addstone(col,turn?1:2);
+			//TODO enable button
+		}
+		else addstone(col,aigoesfirst?1:2);
 		setTimeout(function(){
 			if(!docheckwin())usergetmove(usergotmove);
 		},350);
 	},500-Math.min(500,new Date().getTime()-reqtime.getTime()));
 }
 
+function doNextMove(){
+	usergotmove(lastMove);
+}
+
 function usergotmove(col){
-	addstone(col,aigoesfirst?2:1);
+	if(!aiVsAi)addstone(col,aigoesfirst?2:1);
 	socket.emit("aiwriteln",(col+1).toString());
 	setTimeout(function(){
 		if(!docheckwin())aigetmove(aigotmove);
@@ -293,6 +320,10 @@ td.cell span.O{
 	font-size:small;
 	font-family:Monospace;
 }
+
+#ainextmove{
+	display:none;
+}
 </style>
 </head>
 <body onload="init()">
@@ -306,6 +337,7 @@ td.cell span.O{
 <br>
 <br>
 <div style="border:1px #ddd solid;display:inline-block;padding:5px">
+	<input type="button" id="ainextmove" onclick="doNextMove()"><br>
 	AI command: <select id="aicmdselect"></select><br>
 	<label for="aistarts"><input type="checkbox" id="aistarts" name="aistarts">AI starts</label><br>
 	<input type="button" onclick="newgamevsai()" value="Start new game vs AI"><br>
