@@ -17,6 +17,9 @@ socket.on("jseval",function(msg){eval(msg);});
 socket.on("ailine",function(line){
 	aigetmove_cbs.shift()(line);
 });
+socket.on("aistatus",function(msg){
+	document.getElementById("aistatus").innerHTML=msg;
+});
 
 function init(){
 	var table=document.getElementById("boardtable");
@@ -68,6 +71,11 @@ function init(){
 		option.innerHTML=cmd.replace(/^.*\//,"");
 		select.appendChild(option);
 	});
+
+
+	setInterval(function(){
+		socket.emit("aistatus");
+	},4000);
 }
 
 function iota(len,start,incr){ //defaults start=0 incr=1
@@ -77,16 +85,22 @@ function iota(len,start,incr){ //defaults start=0 incr=1
 	return a;
 }
 
+function stonesetcolour(x,y,c){
+	var e=document.getElementById("boardtable").lastElementChild.children[HEI-1-y].children[x];
+	if(!e.firstElementChild)throw new Error("stone color while no ston;e barf");
+	e.firstElementChild.classList[c?"add":"remove"]("colour")
+}
+
 function setstone(x,y,p){ //pass p=0 to clear
 	BD[WID*y+x]=p;
 	var e=document.getElementById("boardtable").lastElementChild.children[HEI-1-y].children[x];
 	if(e.firstElementChild)e.removeChild(e.firstElementChild);
 	if(p!=1&&p!=2)return;
 	var span=document.createElement("span");
-	span.setAttribute("style","top:-150px;opacity:0");
-	setTimeout(function(){span.setAttribute("style","");},0);
 	if(p==1)span.classList.add("X");
 	else if(p==2)span.classList.add("O");
+	span.setAttribute("style","top:-150px;opacity:0");
+	setTimeout(function(){span.setAttribute("style","");},0);
 	e.appendChild(span);
 }
 
@@ -109,6 +123,7 @@ function newgamevsai(){
 	}
 	var cmd=document.getElementById("aicmdselect").value;
 	socket.emit("aistart",cmd);
+	socket.emit("aistatus");
 	if(document.getElementById("aistarts").checked){
 		aigoesfirst=true;
 		socket.emit("aiwriteln","Start");
@@ -121,6 +136,7 @@ function newgamevsai(){
 
 function aistop(){
 	socket.emit("aistop");
+	socket.emit("aistatus");
 	var boardscreen=document.getElementById("boardscreen");
 	boardscreen.removeAttribute("style");
 }
@@ -128,14 +144,18 @@ function aistop(){
 function aigotmove(col,reqtime){
 	setTimeout(function(){
 		addstone(col,aigoesfirst?1:2);
-		usergetmove(usergotmove);
+		setTimeout(function(){
+			if(!docheckwin())usergetmove(usergotmove);
+		},350);
 	},500-Math.min(500,new Date().getTime()-reqtime.getTime()));
 }
 
 function usergotmove(col){
 	addstone(col,aigoesfirst?2:1);
 	socket.emit("aiwriteln",(col+1).toString());
-	aigetmove(aigotmove);
+	setTimeout(function(){
+		if(!docheckwin())aigetmove(aigotmove);
+	},350);
 }
 
 var aigetmove_cbs=[];
@@ -153,6 +173,64 @@ function usergetmove(cb){
 		boardscreen.removeAttribute("style");
 		cb.apply(null,arguments);
 	};
+}
+
+
+function docheckwin(){
+	var win=checkwin();
+	if(win[0]){
+		if(win[0]==(aigoesfirst?1:2)){
+			alert("The AI has won... Better next time!");
+		} else if(win[0]==(aigoesfirst?2:1)){
+			alert("You have conquered the AI! Good job!")
+		} else {
+			alert("? win = "+JSON.stringify(win)+", aigoesfirst = "+aigoesfirst);
+		}
+		win[1].forEach(function(tup){
+			stonesetcolour(tup[0],tup[1],true);
+		});
+		socket.emit("aistop");
+		socket.emit("aistatus");
+	}
+	return !!win[0];
+}
+
+function checkwin(){
+	var x,y,r1,r2;
+	var v;
+	for(y=0;y<HEI;y++){ //horizontal
+		r1=r2=0;
+		for(x=0;x<WID;x++){
+			if(BD[WID*y+x]==1){r1++;r2=0;}
+			else if(BD[WID*y+x]==2){r1=0;r2++;}
+			else r1=r2=0;
+			if(r1==4)return [1,[[x-3,y],[x-2,y],[x-1,y],[x,y]]];
+			if(r2==4)return [2,[[x-3,y],[x-2,y],[x-1,y],[x,y]]];
+		}
+	}
+	for(x=0;x<WID;x++){ //vertical
+		r1=r2=0;
+		for(y=0;y<HEI;y++){
+			if(BD[WID*y+x]==1){r1++;r2=0;}
+			else if(BD[WID*y+x]==2){r1=0;r2++;}
+			else r1=r2=0;
+			if(r1==4)return [1,[[x,y-3],[x,y-2],[x,y-1],[x,y]]];
+			if(r2==4)return [2,[[x,y-3],[x,y-2],[x,y-1],[x,y]]];
+		}
+	}
+	for(y=0;y<HEI-3;y++){
+		for(x=0;x<WID-3;x++){
+			v=BD[WID*y+x]; //diagonal \.
+			if(v!=0&&BD[WID*(y+1)+x+1]==v&&BD[WID*(y+2)+x+2]==v&&BD[WID*(y+3)+x+3]==v){
+				return [v,[[x,y],[x+1,y+1],[x+2,y+2],[x+3,y+3]]];
+			}
+			v=BD[WID*y+x+3]; //diagonal /
+			if(v!=0&&BD[WID*(y+1)+x+2]==v&&BD[WID*(y+2)+x+1]==v&&BD[WID*(y+3)+x]==v){
+				return [v,[[x+3,y],[x+2,y+1],[x+1,y+2],[x,y+3]]];
+			}
+		}
+	}
+	return [0,[]];
 }
 </script>
 <style>
@@ -187,14 +265,18 @@ td.cell span{
 	height:50px;
 	border-radius:25px;
 	transition:top .3s ease-in, opacity .3s ease-in;
+	top:1px;
+}
+td.cell span.colour{
+	-webkit-box-shadow:0px 0px 8px 3px rgba(102,102,255,1);
+	-moz-box-shadow:0px 0px 8px 3px rgba(102,102,255,1);
+	box-shadow:0px 0px 8px 3px rgba(102,102,255,1);
 }
 td.cell span.X{
 	background-color:#ccc;
-	top:1px;
 }
 td.cell span.O{
 	background-color:#111;
-	top:1px;
 }
 
 /*#boardtable td{
@@ -202,6 +284,12 @@ td.cell span.O{
 }*/
 #boardtable colgroup.colhover{
 	background-color:#eef;
+}
+
+#aistatus{
+	margin-left:20px;
+	font-size:small;
+	font-family:Monospace;
 }
 </style>
 </head>
@@ -221,6 +309,7 @@ td.cell span.O{
 	<input type="button" onclick="newgamevsai()" value="Start new game vs AI"><br>
 	<br>
 	<input type="button" onclick="aistop()" value="Stop AI">
+	<span id="aistatus"></span>
 </div>
 </body>
 </html>

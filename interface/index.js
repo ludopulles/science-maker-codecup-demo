@@ -9,13 +9,14 @@ var app=require("express")(),
 var HTTPPORT=8012;
 
 
-var conn=null,proc=null,aibuf=null,ailines=[],ailineslisteners=[];
+var conn=null,proc=null,aicmd=null,aibuf=null,ailines=[],ailineslisteners=[];
 
 
 function resetai(){
 	console.log("AI_STOP\n");
 	if(proc)proc.kill("SIGTERM");
 	proc=null;
+	aicmd=null;
 	aibuf=null;
 	ailines=[];
 	ailineslisteners=[];
@@ -41,6 +42,8 @@ io.on("connection",function(_conn){
 		resetai();
 	});
 	conn.on("aistart",function(cmd){
+		resetai();
+		aicmd=cmd;
 		var lexed=shlex(cmd);
 		proc=child_process.spawn(lexed[0],lexed.slice(1),{stdio:["pipe","pipe","inherit"]});
 		console.log("AI_START");
@@ -85,6 +88,10 @@ io.on("connection",function(_conn){
 			conn.emit("ailine",line);
 			console.log(" sent: "+line);
 		});
+	});
+	conn.on("aistatus",function(){
+		if(proc==null)conn.emit("aistatus","Not running");
+		else conn.emit("aistatus","Running: "+aicmd);
 	});
 });
 
