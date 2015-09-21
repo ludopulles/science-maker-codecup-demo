@@ -85,6 +85,13 @@ function AI(){
 	}
 }
 
+app.get('/style.css', function(req, res) {
+	res.sendFile(__dirname + "/style.css");
+});
+app.get('/client.js', function(req, res) {
+	res.sendFile(__dirname + "/client.js");
+});
+
 app.get("/",function(req,res){
 	res.sendFile(__dirname+"/index.html");
 });
