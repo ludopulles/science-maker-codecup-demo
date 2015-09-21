@@ -6,7 +6,7 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
 var WID=7,HEI=6;
-var aicmds=["./player1","./player2","./player3","./TNTiv3a -d 8","./TNTiv3a -d 10","./TNTiv3a -d 11","./TNTiv3a -d 12","./TNTiv3a2 -d 8","./TNTiv3a2 -d 10","./TNTiv3a2 -d 11","./TNTiv3a2 -d 12","./voer14_doc"];
+var aicmds=["./player1","./player2","./player3","./TNTiv3a -d 8","./TNTiv3a -d 10","./TNTiv3a -d 11","./TNTiv3a -d 12","./TNTiv3a2 -d 8","./TNTiv3a2 -d 10","./TNTiv3a2 -d 11","./TNTiv3a2 -d 12","./voer14_doc","./mc"];
 var colheight,BD;
 
 var aigoesfirst;
@@ -181,13 +181,15 @@ function usergetmove(cb){
 function docheckwin(){
 	var win=checkwin();
 	if(win[0]){
+		var alertstring;
 		if(win[0]==(aigoesfirst?1:2)){
-			alert("The AI has won... Better next time!");
+			alertstring="The AI has won... Better next time!";
 		} else if(win[0]==(aigoesfirst?2:1)){
-			alert("You have conquered the AI! Good job!")
+			alertstring="You have conquered the AI! Good job!";
 		} else {
-			alert("? win = "+JSON.stringify(win)+", aigoesfirst = "+aigoesfirst);
+			alertstring="? win = "+JSON.stringify(win)+", aigoesfirst = "+aigoesfirst;
 		}
+		setTimeout(function(){alert(alertstring);},1);
 		win[1].forEach(function(tup){
 			stonesetcolour(tup[0],tup[1],true);
 		});
