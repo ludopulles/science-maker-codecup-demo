@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cstdint>
+#include <climits>
+#include <cstring>
 #include <sys/time.h>
 
 #define U64(x) ((uint64_t)(x))
