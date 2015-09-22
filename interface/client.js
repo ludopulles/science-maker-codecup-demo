@@ -11,7 +11,8 @@ socket.on("ailine",function(line){
 	aigetmove_cbs.shift()(line);
 });
 socket.on("aistatus",function(msg){
-	document.getElementById("aistatus").innerHTML=msg;
+	document.getElementById("aistatus1").innerHTML=msg;
+	document.getElementById("aistatus2").innerHTML=msg;
 });
 
 function init(){
@@ -58,13 +59,17 @@ function init(){
 	colheight=iota(WID,0,0);
 	BD=iota(WID*HEI,0,0);
 
-	var select=document.getElementById("aicmdselect");
+	var selects=[document.getElementById("aicmdselect"),
+		document.getElementById("aicmdselect1"),
+		document.getElementById("aicmdselect2")];
 	aicmds.forEach(function(cmd,i){
-		var option=document.createElement("option");
-		option.value=cmd;
-		if(i==7)option.setAttribute("selected","");
-		option.innerHTML=cmd.replace(/^.*\//,"");
-		select.appendChild(option);
+		for(var i=0;i<3;i++){
+			var option=document.createElement("option");
+			option.value=cmd;
+			if(i==7)option.setAttribute("selected","");
+			option.innerHTML=cmd.replace(/^.*\//,"");
+			selects[i].appendChild(option);
+		}
 	});
 
 
@@ -136,8 +141,9 @@ function newaivsai(){
 	for(i=0;i<WID;i++){
 		while(colheight[i])removestone(i);
 	}
-	var cmd=document.getElementById("aicmdselect").value;
-	socket.emit("aistart2",cmd,cmd);
+	var cmd1=document.getElementById("aicmdselect1").value;
+	var cmd2=document.getElementById("aicmdselect2").value;
+	socket.emit("aistart2",cmd1,cmd2);
 	socket.emit("aistatus");
 	socket.emit("aiwriteln","Start");
 	aigetmove(aigotmove);
@@ -189,24 +195,35 @@ function aigetmove(cb){
 
 var usergetmove_cb=null;
 function usergetmove(cb){
-	var boardscreen=document.getElementById("boardscreen");
-	boardscreen.style.display="none";
-	usergetmove_cb=function(){
-		boardscreen.removeAttribute("style");
-		cb.apply(null,arguments);
-	};
+	if(aiVsAi)doNextMove();
+	else{
+		var boardscreen=document.getElementById("boardscreen");
+		boardscreen.style.display="none";
+		usergetmove_cb=function(){
+			boardscreen.removeAttribute("style");
+			cb.apply(null,arguments);
+		};
+	}
 }
 
 function docheckwin(){
 	var win=checkwin();
 	if(win[0]){
 		var alertstring;
-		if(win[0]==(aigoesfirst?1:2)){
-			alertstring="The AI has won... Better next time!";
-		} else if(win[0]==(aigoesfirst?2:1)){
-			alertstring="You have conquered the AI! Good job!";
-		} else {
-			alertstring="? win = "+JSON.stringify(win)+", aigoesfirst = "+aigoesfirst;
+		if(!aiVsAi){
+			if(win[0]==(aigoesfirst?1:2)){
+				alertstring="The AI has won... Better next time!";
+			} else if(win[0]==(aigoesfirst?2:1)){
+				alertstring="You have conquered the AI! Good job!";
+			} else {
+				alertstring="? win = "+JSON.stringify(win)+", aigoesfirst = "+aigoesfirst;
+			}
+		}else{
+			if(win[0]==1){
+				alertstring="Grey has won";
+			}else{
+				alertstring="Black has won";
+			}
 		}
 		setTimeout(function(){alert(alertstring);},1);
 		win[1].forEach(function(tup){
@@ -254,4 +271,22 @@ function checkwin(){
 		}
 	}
 	return [0,[]];
+}
+
+function showAivsai(){
+	document.getElementById("showaivsai").style.display="none";
+	document.getElementById("showplayervsai").style.display="inline";
+	document.getElementById("playervsai").style.display="none";
+	document.getElementById("playervsaishown").style.display="none";
+	document.getElementById("aivsai").style.display="inline-block";
+	document.getElementById("aivsaishown").style.display="inline-block";
+}
+
+function showPlayervsai(){
+	document.getElementById("showaivsai").style.display="inline";
+	document.getElementById("showplayervsai").style.display="none";
+	document.getElementById("playervsai").style.display="inline-block";
+	document.getElementById("playervsaishown").style.display="inline-block";
+	document.getElementById("aivsai").style.display="none";
+	document.getElementById("aivsaishown").style.display="none";
 }
