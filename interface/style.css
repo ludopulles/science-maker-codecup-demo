@@ -56,6 +56,20 @@ td.cell span.O{
 	font-family:Monospace;
 }
 
-#ainextmove{
+#showplayervsai{
 	display:none;
+}
+
+#aivsai{
+	display:none;
+}
+
+#aivsaishown{
+	display:none;
+}
+
+div.selectDiv{
+	border:1px #ddd solid;
+	display:inline-block;
+	padding:5px;
 }
