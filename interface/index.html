@@ -17,14 +17,27 @@
 </div>
 <br>
 <br>
-<div style="border:1px #ddd solid;display:inline-block;padding:5px">
-	<input type="button" id="ainextmove" onclick="doNextMove()"><br>
-	AI command: <select id="aicmdselect"></select><br>
+<input type="button" onclick="showPlayervsai()" id="showplayervsai" value="Play against AI">
+<span id="playervsaishown"><b>Play against AI</b></span>
+<span id="aivsaishown"><b>AI vs AI</b></span>
+<input type="button" onclick="showAivsai()" id="showaivsai" value="AI vs AI"><br>
+<div class="selectDiv" id="playervsai">
+
+	AI: <select id="aicmdselect"></select><br>
 	<label for="aistarts"><input type="checkbox" id="aistarts" name="aistarts">AI starts</label><br>
 	<input type="button" onclick="newgamevsai()" value="Start new game vs AI"><br>
 	<br>
 	<input type="button" onclick="aistop()" value="Stop AI">
-	<span id="aistatus"></span>
+	<span id="aistatus1"></span>
+</div>
+<div class="selectDiv" id="aivsai">
+
+	Grey: <select id="aicmdselect1"></select><br>
+	Black: <select id="aicmdselect2"></select><br>
+	<input type="button" onclick="newaivsai()" value="Start AI vs AI"><br>
+	<br>
+	<input type="button" onclick="aistop()" value="Stop AI">
+	<span id="aistatus2"></span>
 </div>
 </body>
 </html>
