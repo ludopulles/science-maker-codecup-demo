@@ -32,7 +32,6 @@ function AI(){
 		this.reset();
 		cmd=command;
 		var lexed=shlex(cmd);
-		console.log( process.env.PATH );
 		console.log("starting");
 		proc=child_process.spawn(lexed[0],lexed.slice(1),{stdio:["pipe","pipe","inherit"]});
 		console.log("AI_START");
