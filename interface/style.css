@@ -1,22 +1,33 @@
 table#boardtable{
 	border-collapse:collapse;
 }
+div#boardcontainer *{
+	box-sizing:content-box!important
+}
+div#right-div{
+	display:inline-block;
+	position: absolute;
+	top:10px;
+	left:950px;
+	width:250px;
+}
 div#boardscreen{
 	top:0;
 	position:absolute;
 	display:inline-block;
-	width:380px;
-	height:320px;
+	width:520px;
+	height:440px;
 	background-color:rgba(128,128,128,0.2);
 }
 td.cell{
 	position:relative;
-	width:50px;
-	height:50px;
+	width:70px;
+	height:70px;
 	border:1px #333 solid;
 	border-width:1px 2px 1px 2px;
 	border-top-color:#bbb;
 	border-bottom-color:#bbb;
+	padding:1px;
 }
 tr:last-child td.cell{
 	border-bottom-width:2px;
@@ -25,9 +36,9 @@ tr:last-child td.cell{
 td.cell span{
 	position:absolute;
 	display:inline-block;
-	width:50px;
-	height:50px;
-	border-radius:25px;
+	width:70px;
+	height:70px;
+	border-radius:35px;
 	transition:top .3s ease-in, opacity .3s ease-in;
 	top:1px;
 }
@@ -69,7 +80,23 @@ td.cell span.O{
 }
 
 div.selectDiv{
+	position:relative;
 	border:1px #ddd solid;
 	display:inline-block;
 	padding:5px;
+	width:250px;
+	height: 300x;
+}
+
+div.upperDiv{
+	display:inline-block;
+	height:160px;
+}
+
+body{
+	padding-left: 400px;
+}
+
+#aistarts{
+	display:inline-block;
 }

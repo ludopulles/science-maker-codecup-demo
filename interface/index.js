@@ -79,8 +79,8 @@ function AI(){
 	}
 
 	this.status=function(){
-		if(proc==null)conn.emit("aistatus","Not running");
-		else conn.emit("aistatus","Running: "+cmd);
+		if(proc==null)return "Not running";
+		else return "Running: "+cmd;
 	}
 }
 
@@ -90,7 +90,9 @@ app.get('/style.css', function(req, res) {
 app.get('/client.js', function(req, res) {
 	res.sendFile(__dirname + "/client.js");
 });
-
+app.get('/bootstrap.css', function(req, res) {
+	res.sendFile(__dirname + "/bootstrap/css/bootstrap.css");
+});
 app.get("/",function(req,res){
 	res.sendFile(__dirname+"/index.html");
 });
@@ -144,7 +146,7 @@ io.on("connection",function(_conn){
 		}
 	});
 	conn.on("aistatus",function(){
-		ai.status();
+		conn.emit("aistatus","AI1:"+ai.status()+"<br>AI2:"+ai2.status());
 	});
 });
 

@@ -6,6 +6,7 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="client.js"></script>
 <link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="bootstrap.css" />
 </head>
 <body onload="init()">
 <div id="boardcontainer">
@@ -15,29 +16,31 @@
 		<div id="boardscreen"></div>
 	</div>
 </div>
-<br>
-<br>
-<input type="button" onclick="showPlayervsai()" id="showplayervsai" value="Play against AI">
+<div id="right-div">
+<input type="button" onclick="showPlayervsai()" id="showplayervsai" value="Play against AI" class="btn btn-link">
 <span id="playervsaishown"><b>Play against AI</b></span>
-<span id="aivsaishown"><b>AI vs AI</b></span>
-<input type="button" onclick="showAivsai()" id="showaivsai" value="AI vs AI"><br>
+<input type="button" onclick="showAivsai()" id="showaivsai" value="AI vs AI" class="btn btn-link">
+<span id="aivsaishown"><b>AI vs AI</b></span><br>
 <div class="selectDiv" id="playervsai">
-
-	AI: <select id="aicmdselect"></select><br>
-	<label for="aistarts"><input type="checkbox" id="aistarts" name="aistarts">AI starts</label><br>
-	<input type="button" onclick="newgamevsai()" value="Start new game vs AI"><br>
+	<div class="upperDiv">
+		<label>AI:</label> <select id="aicmdselect" class="form-control"></select><br>
+		<label for="aistarts"><input type="checkbox" id="aistarts" name="aistarts" class="checkbox">AI starts</label><br>
+	</div>
+	<input type="button" onclick="newgamevsai()" value="Start game vs AI" class="btn btn-primary"><br>
 	<br>
-	<input type="button" onclick="aistop()" value="Stop AI">
+	<input type="button" onclick="aistop()" value="Stop AI" class="btn btn-danger"><br>
 	<span id="aistatus1"></span>
 </div>
 <div class="selectDiv" id="aivsai">
-
-	Grey: <select id="aicmdselect1"></select><br>
-	Black: <select id="aicmdselect2"></select><br>
-	<input type="button" onclick="newaivsai()" value="Start AI vs AI"><br>
+	<div class="upperDiv">
+		<label>Grey: </label><select id="aicmdselect1" class="form-control"></select><br>
+		<label>Black: </label><select id="aicmdselect2" class="form-control"></select><br>
+	</div>
+	<input type="button" onclick="newaivsai()" value="Start AI vs AI" class="btn btn-primary"><br>
 	<br>
-	<input type="button" onclick="aistop()" value="Stop AI">
+	<input type="button" onclick="aistop()" value="Stop AI" class="btn btn-danger"><br>
 	<span id="aistatus2"></span>
+</div>
 </div>
 </body>
 </html>
