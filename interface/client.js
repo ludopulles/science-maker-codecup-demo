@@ -92,6 +92,10 @@ function stonesetcolour(x,y,c){
 }
 
 function setstone(x,y,p){ //pass p=0 to clear
+	if(y<0||y>=6){
+		console.log("INVALID Y VALUE y="+y);
+		return;
+	}
 	BD[WID*y+x]=p;
 	var e=document.getElementById("boardtable").lastElementChild.children[HEI-1-y].children[x];
 	if(e.firstElementChild)e.removeChild(e.firstElementChild);
@@ -100,7 +104,7 @@ function setstone(x,y,p){ //pass p=0 to clear
 	if(p==1)span.classList.add("X");
 	else if(p==2)span.classList.add("O");
 	span.setAttribute("style","top:-150px;opacity:0");
-	setTimeout(function(){span.setAttribute("style","");},0);
+	setTimeout(function(){span.setAttribute("style","");},1);
 	e.appendChild(span);
 }
 
@@ -147,7 +151,6 @@ function newaivsai(){
 	socket.emit("aistatus");
 	socket.emit("aiwriteln","Start");
 	aigetmove(aigotmove);
-	document.getElementById("ainextmove").style.display="inline";
 }
 
 function aistop(){
