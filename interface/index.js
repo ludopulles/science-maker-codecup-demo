@@ -62,6 +62,7 @@ function AI(){
 	}
 
 	this.writeln=function(text){
+		if(proc==null)return;
 		console.log("AI_IN: "+text);
 		proc.stdin.write(text+"\n");
 	}
