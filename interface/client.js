@@ -1,5 +1,5 @@
 var WID=7,HEI=6;
-var aicmds=["./player1","./player2","./player3","./TNTiv3a -d 8","./TNTiv3a -d 10","./TNTiv3a -d 11","./TNTiv3a -d 12","./TNTiv3a2 -d 8","./TNTiv3a2 -d 10","./TNTiv3a2 -d 11","./TNTiv3a2 -d 12","./voer14_doc","./mc"];
+var aicmds=["./player1","./player2","./player3","./TNTiv3a -d 8","./TNTiv3a -d 10","./TNTiv3a -d 11","./TNTiv3a -d 12","./TNTiv3a2 -d 8","./TNTiv3a2 -d 10","./TNTiv3a2 -d 11","./TNTiv3a2 -d 12","./voer14_doc","./mc","java Ludiquatre"];
 var colheight,BD;
 
 var aigoesfirst;
@@ -67,7 +67,7 @@ function init(){
 			var option=document.createElement("option");
 			option.value=cmd;
 			if(i==7)option.setAttribute("selected","");
-			option.innerHTML=cmd.replace(/^.*\//,"");
+			option.innerHTML=cmd.replace(/^(?:.*\/|java )/,"").replace(/\.exe$/,"");
 			selects[i].appendChild(option);
 		}
 	});
